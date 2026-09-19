@@ -13,16 +13,18 @@ headers = {
     "Content-Type": "application/json"
 }
 
+history = []
+
 
 def chat(message):
+  history.append({
+        "role": "user",
+        "content": message
+    })
+  
   data = {
       "model": "openai/gpt-oss-120b:fastest",
-      "messages": [
-          {
-              "role": "user",
-              "content": message
-          }
-      ]
+      "messages": history
   }
 
   response = requests.post(
@@ -34,11 +36,34 @@ def chat(message):
 
   if response.status_code == 200:
       reply = response.json()["choices"][0]["message"]["content"]
+
+      history.append({
+            "role": "assistant",
+            "content": reply
+        })
       return reply
   else:
       print("Request failed:", response.status_code)
       print(response.text)
       return None
 
-reply = chat("What is Python?")
-print(reply)
+while True:
+    message = input("Ask anything: ")
+
+    if message.lower() in  [
+    "quit",
+    "bye",
+    "goodbye",
+    "exit",
+    "see you",
+    "see you later",
+    "i'm leaving"
+]:
+        print("Goodbye!")
+        break
+
+    reply = chat(message)
+
+    if reply:
+        print("AI:", reply)
+
